@@ -1,0 +1,138 @@
+///CONTROL DE RIEGO Y TEMPERATURA PARA UN INVERNADERO IMPLEMENTADO EN LAS AZOTEAS DE LA ZONA PONIENTE EN LA CIUDAD DE MEXICO 
+int SensorValue;
+#include <LiquidCrystal.h>
+//Definimos variabes para la pantalla lcd
+int rs=12;
+int e=11;
+int d4=5;
+int d5 = 4;
+// timpo de retraso//delay time
+int dTime= 500;
+//Pantalla LCD
+int d6=3;
+int d7=2;
+LiquidCrystal lcd(rs, e, d4, d5, d6, d7);
+////
+/////
+//SENSOR DHT11
+//Abrimos libreia de DHT 
+#include <DHT.h>
+#include <DHT_U.h>
+//definimos el sensor que se ocupara
+#define  Type DHT11
+int dhtPin=8;// Se define en que pin del arduino estara el sensor 
+DHT dht (8, DHT11);
+int humidity;
+float tempC;
+float tempF;
+///
+
+//Sensor de humeda en tierra YL69
+const int bomba= 13;// Se define en que pin del arduino estara la bomba 
+const int humTierra = A0; //Se define en que pin del arduino estara el sensor YL69
+
+//Leces led
+const int luces=6;// Se define en que pin del arduino estaran las luces 
+
+//
+//VENTILADOR//
+
+int ventilador=10;  //Se define en que pin del arduino estara el ventilador 
+///int SensorValue=  13; 
+//int //LUCES
+void setup()
+{
+  //SE inicializa la pantalla lcd, serial, sensor
+  lcd.begin(16, 2);
+  Serial.begin(9600);
+  dht.begin();
+  //SE inicializa el sensor de humedad y mini bomba
+  pinMode(humTierra, INPUT);
+  pinMode(bomba, OUTPUT);
+  ////SE inicializan las luces 
+  pinMode(luces, OUTPUT);
+  //SE inicializa el VENTILADOR
+  pinMode (ventilador, OUTPUT);
+  
+}
+
+void loop()
+{   
+  if(tempC>30){
+              digitalWrite (ventilador, LOW);
+              }else {
+                       digitalWrite(ventilador, HIGH);
+                    }
+
+  //digitalWrite(ventilador, HIGH);
+  humidity = dht.readHumidity();
+  tempC =dht.readTemperature();
+  tempF= dht.readTemperature(true );//true
+  //Calculamos indicesde calorn en gardos F Y C
+  //FAHREHEINTE
+  //float hif = dht.computeHeatIndex(f, h);
+  //CENTIGRADOS 
+   // float hic = dht.computeHeatIndex(t, h, false);
+
+  
+  int SensorValvue =analogRead (humTierra);
+  //-----------------------------------//
+
+Serial.print("humTierra:");
+Serial.print("Humidity");
+Serial.print(" % Temperatura:");
+Serial.print("tempC");
+Serial.print("*C/");
+Serial.print("tempF");
+Serial.print("*F");
+Serial.print("SensorValue");
+
+lcd.clear();
+lcd.setCursor(0,0);
+lcd.print("HUMEDAD REAL");
+lcd.setCursor(12,0);
+lcd.print(humidity);
+lcd.setCursor(14, 0);
+lcd.print("%");
+
+//
+//CONDICIONALES PARA EL SISTEMA DE RIEGO 
+
+if(SensorValue>900){
+  digitalWrite(bomba, HIGH);
+  
+}else{
+  digitalWrite(bomba, LOW);
+}
+lcd.setCursor(0,1);
+lcd.print("HUMEDAD T");
+lcd.setCursor(12,1);
+lcd.print(SensorValue);
+delay(3000);
+lcd.clear();
+
+lcd.setCursor(2,0);
+lcd.print("TEMPERATURA");
+lcd.setCursor(2,1);
+lcd.print(tempC);
+lcd.print("°C");
+lcd.setCursor(8,1);
+lcd.print(tempF);
+lcd.print("-°F");
+delay(3000);
+lcd.clear();
+
+
+//CONDICONAL PARA LAS LUCES LED 
+if(tempC<20){
+              digitalWrite(luces, HIGH);
+            } else{
+                    digitalWrite(luces, LOW);
+                  }
+//Condicionales para el ventilador 
+if(tempC<30){
+              digitalWrite(ventilador, LOW);
+            }else{
+                    digitalWrite(ventilador, HIGH);
+                  }
+}
